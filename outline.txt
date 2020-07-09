@@ -1,0 +1,6 @@
+The .gitignore I just copy pasted from flask documentation
+
+things to learn about:
+    sockets and servers
+    flask and servers
+    front end: html / css / javascript
