@@ -4,3 +4,7 @@ things to learn about:
     sockets and servers
     flask and servers
     front end: html / css / javascript
+
+All css js and pictures go in the "static" folder
+All html goes into the "templates" folder
+the python can wait outside
