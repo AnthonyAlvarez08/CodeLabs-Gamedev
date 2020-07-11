@@ -12,7 +12,7 @@ app.config['SECRET_KEY'] = '975c9775521fd39cba0f67c131bdf4b7'
 @app.route("/", methods=["GET", "POST"])
 def home():
     # will redirect to host or join depending on what theu choose
-    return render_template("home.html")
+    pass
 
 
 @app.route("/host", methods=["GET", "POST"])
