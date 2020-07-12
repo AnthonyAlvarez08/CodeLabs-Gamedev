@@ -2,17 +2,19 @@
 Here is where the web app will run
 """
 # import socket, _thread
-from flask import Flask, render_template, url_for
-from recieveData import JoinCode, HostForm
+from flask import Flask, render_template, url_for, flash, redirect
+from recieveData import JoinForm, HostForm
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '975c9775521fd39cba0f67c131bdf4b7'
+
 
 # home page where you will be prompted to host or join a game
 @app.route("/home", methods=["GET", "POST"])
 @app.route("/", methods=["GET", "POST"])
 def home():
     # will redirect to host or join depending on what theu choose
-    pass
+    form = HostForm()
+    return render_template('home.html', form=form)
 
 
 @app.route("/host", methods=["GET", "POST"])

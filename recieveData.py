@@ -18,5 +18,3 @@ class JoinForm(FlaskForm):
     joincode = PasswordField("Join Code")
 
     joingame = SubmitField('Join Game')
-
-

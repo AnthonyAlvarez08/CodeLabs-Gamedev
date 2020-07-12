@@ -1,3 +1,17 @@
 {% extends "index.html" %}
 {% block content %}
+<div class="">
+    {{ form.name.label(class="") }}
+    {% if form.name.errors %}
+    {{ form.name(class="") }}
+    <div class="">
+        {% for error in form.name.errors %}
+        <span>{{ error }}</span>
+        {% endfor %}
+    </div>
+    {% else %}
+    {{ form.name(class="") }}
+    {% endif %}
+</div>
+    {{ form.confirmHost(class="") }}
 {% endblock %}
