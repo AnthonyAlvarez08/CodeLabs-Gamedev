@@ -11,12 +11,6 @@ app.config['SECRET_KEY'] = '975c9775521fd39cba0f67c131bdf4b7'
 socketio = SocketIO(app)
 
 # sample socketio thing to update all clients 
-@socketio.on('event')
-def func(event):
-    print(f'{event} came in')
-    # broadcast=True makes it so all people connected to server listen
-    send(event, broadcast=True)
-
 # what happens when people join? how browser know join? front end maybe?
 # how does program know what joined means
 @socket.io('join')
