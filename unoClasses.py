@@ -62,11 +62,12 @@ class Player:
         index = int(input('what card to play (select number)?  '))
         try:
             assert len(self.hand) > index
-            assert (previousCard.color == self.hand[index].color
-                    or previousCard.num_action == self.hand[index].num_action
-                    or self.hand[index].color == 'change')
-        except:
-            print("You can't play that card")
+            if (previousCard.color == self.hand[index].color
+                or previousCard.num_action == self.hand[index].num_action
+                or self.hand[index].color == 'change') == False:
+                raise ValueError
+        except Exception as e:
+            print("You can't play that card because", e)
             self.play_card()
 
         card = self.hand.pop(index)
@@ -75,4 +76,7 @@ class Player:
 
     def show_hand(self):
         print(self.hand)
+
+    def __repr__(self):
+        return self.name
 
