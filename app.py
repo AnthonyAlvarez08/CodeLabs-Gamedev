@@ -4,7 +4,7 @@ Here is where the web app will run
 # import socket, _thread
 from flask import Flask, render_template, url_for, flash, redirect
 from recieveData import JoinForm, HostForm
-from flask_socketio import SocketIO, send
+from flask_socketio import SocketIO, send, emit
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '975c9775521fd39cba0f67c131bdf4b7'
@@ -13,10 +13,15 @@ socketio = SocketIO(app)
 # sample socketio thing to update all clients 
 # what happens when people join? how browser know join? front end maybe?
 # how does program know what joined means
-@socket.io('join')
-def joinlistener(person):
+@socketio.on('join')
+def client_connected(person):
     print(f'{person} joined')
     send(person, broadcast=True)
+
+
+@socketio.on('move')
+def handle_move_request(move):
+    pass
 
 
 # home page where you will be prompted to host or join a game

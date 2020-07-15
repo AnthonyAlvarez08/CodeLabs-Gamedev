@@ -2,7 +2,7 @@
 Should we make our own custom cards?
 If need be I can just make the game be a function
 This is not finished yet
-TODO: win condition, uno yelling, drawing when can't play, sometimes can't play cards with same number
+TODO: uno yelling, drawing when can't play, sometimes can't play cards with same number
 """
 
 from unoClasses import new_card, Card, Player, previousCard
@@ -31,20 +31,32 @@ while True:
     for i, card in enumerate(players[f].hand):
         print(i, card)
 
-    previousCard = players[f].play_card()
+    temp = previousCard
+    previousCard = players[f].play_card(temp)
+    while previousCard == 'unacceptable':
+        previousCard = players[f].play_card(temp)
+
+    if players[f].numCards == 0:
+        print(f'{players[f].name} won!\n\nThank you so much for playing my game!')
+        break
 
     if previousCard.color == 'change':
         previousCard.color = color_change()
-    if previousCard.num_action == 'cancel':
-        f += 2 * increment
+    if previousCard.numAction == 'cancel':
+        if f == numPlayers and increment == 1:
+            f = 0
+        elif increment == -1 and f == 0:
+            f = numPlayers -1
+        else:
+            f += 2 * increment
         continue
-    if previousCard.num_action == 'reverse':
+    if previousCard.numAction == 'reverse':
         # basically a toggle
         increment *= -1
     
     # need to account for cycles
-    if previousCard.num_action == '+2' or previousCard.num_action == '+4':
-        _, change = map(str, list(previousCard.num_action))
+    if previousCard.numAction == '+2' or previousCard.numAction == '+4':
+        _, change = map(str, list(previousCard.numAction))
         change = int(change)
         if increment == 1:
             if f < numPlayers - 1:
@@ -61,9 +73,11 @@ while True:
                 for i in range(change):
                     players[f + increment].draw_card()
 
-
     f += increment
 
     # cycling management
-    if f >= numPlayers - 1: f = 0
-    if f <= 0: f += numPlayers - 1
+    if f > numPlayers - 1:
+         f = 0
+    elif f < 0:
+         f += numPlayers - 1
+    
