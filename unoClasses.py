@@ -62,7 +62,12 @@ class Player:
 
         acceptable = False
 
-        assert len(self.hand) > index
+        try:
+            assert self.numCards > index
+        except AssertionError:
+            print('You can\'t play that card')
+            return 'unacceptable'
+            
         if previousCard.color == self.hand[index].color:
             acceptable = True
         elif previousCard.numAction == self.hand[index].numAction:

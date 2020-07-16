@@ -2,7 +2,7 @@
 Should we make our own custom cards?
 If need be I can just make the game be a function
 This is not finished yet
-TODO: uno yelling, drawing when can't play, sometimes can't play cards with same number
+TODO: uno yelling, drawing when can't play, add the rules, no start on action card
 """
 
 from unoClasses import new_card, Card, Player, previousCard
@@ -49,9 +49,11 @@ while True:
             f = numPlayers -1
         else:
             f += 2 * increment
+        print('\nNext player has been skipped!')
         continue
     if previousCard.numAction == 'reverse':
         # basically a toggle
+        print('\nCycle Reversed')
         increment *= -1
     
     # need to account for cycles
