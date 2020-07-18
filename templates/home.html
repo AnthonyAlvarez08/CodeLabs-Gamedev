@@ -1,17 +1,10 @@
 {% extends "index.html" %}
+% from "index.html" import render_field %}
 {% block content %}
-<div class="">
-    {{ form.name.label(class="") }}
-    {% if form.name.errors %}
-    {{ form.name(class="") }}
-    <div class="">
-        {% for error in form.name.errors %}
-        <span>{{ error }}</span>
-        {% endfor %}
+<form method=post>
+    <div>
+        {{ render_field(form.name) }}
+        {{ render_field(form.confirmHost) }}
     </div>
-    {% else %}
-    {{ form.name(class="") }}
-    {% endif %}
-</div>
-    {{ form.confirmHost(class="") }}
+</form>
 {% endblock %}
