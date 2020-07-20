@@ -17,14 +17,13 @@ if rules == 'y' or rules == 'yes':
 
 # prompts for a color, checks if it is acceptable and then returns it
 def color_change():
-    try:
-        newColor = str(input('What color would you like it to be?  '))
-        assert newColor in ["blue", "red", "orange", "purple", "pink", "yellow", "green"]
-    except:
+    newColor = str(input('What color would you like it to be?  '))
+    if newColor in ["blue", "red", "orange", "purple", "pink", "yellow", "green"]:
+        return newColor
+    else:
         print('That\'s not a valid color')
-        color_change()
+        return color_change()
     
-    return newColor
 
 # prompt to draw card and try to play or skip turn
 def unplayable(hand, topCard):
@@ -33,7 +32,7 @@ def unplayable(hand, topCard):
             return False
         elif topCard.numAction == i.numAction:
             return False
-        elif self.hand[index].color == 'change':
+        elif i.color == 'change':
             return False
     return True
     
@@ -51,16 +50,21 @@ while True:
     for i, card in enumerate(players[f].hand):
         print(i, card)
     
-    '''
-    if unplayable(players[f].hand, previousCard):
+    # maybe works
+    # draw if can't play
+    while unplayable(players[f].hand, previousCard):
         print('you have no cards that can be played!')
-        choice = input('would you like to skip your turn or draw a card? (skip/draw)')
+        choice = input('would you like to skip your turn or draw a card? (skip/draw)  ')
         if choice == 'skip' or choice == 's':
             f += increment
             continue
         elif choice == 'draw' or choice == 'd':
+            # need to print hand again
             players[f].draw_card()
-    '''            
+            print(f'New card is {players[f].hand(players[f].numCards - 1)}')
+
+
+            
 
     temp = previousCard
     previousCard = players[f].play_card(previousCard=temp)
@@ -74,11 +78,12 @@ while True:
     if previousCard.color == 'change':
         previousCard.color = color_change()
         
+    # maybe works
     if previousCard.numAction == 'cancel':
-        if f == numPlayers and increment == 1:
+        if f == numPlayers - 2:
             f = 0
-        elif increment == -1 and f == 0:
-            f = numPlayers -1
+        elif f == 0:
+            f = numPlayers - 1
         else:
             f += 2 * increment
         print('\nNext player has been skipped!')
