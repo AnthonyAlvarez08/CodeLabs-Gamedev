@@ -5,7 +5,7 @@ This is not finished yet
 TODO: uno yelling, drawing when can't play, add the rules
 """
 
-from unoClasses import new_card, Card, Player, previousCard
+from unoClassesLegacy import new_card, Card, Player, previousCard
 
 numPlayers = int(input('How many players in this session?  '))
 
