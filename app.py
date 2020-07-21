@@ -2,41 +2,20 @@
 Here is where the web app will run
 mingjie avialble after 6pm eastern
 TODO: rooms, fix uno reverse logic, hook up uno logic to this, rooms
+TODO: player class, non generator deck
 """
-# import socket, _thread
+
 from flask import Flask, render_template, url_for, flash, redirect, request
-from recieveData import JoinForm, HostForm
-from flask_socketio import SocketIO, send, emit
+from recieveData import JoinForm
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
+from time import time
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '975c9775521fd39cba0f67c131bdf4b7'
 cors = CORS(app)
 socketio = SocketIO(app)
 
-# sample socketio thing to update all clients 
-# what happens when people join? how browser know join? front end maybe?
-# how does program know what joined means
-@socketio.on('join')
-def client_connected(person):
-    print(f'{person} joined')
-    print(request.sid)
-    send(person, broadcast=True)
-
-
-@socketio.on('move')
-def handle_move_request(move):
-    pass
-
-@socketio.on('connect')
-def initialize():
-    pass
-
-
-
-# # # # # # # # # # # # # # # # # #
-# Transition to renediring pages  #
-# # # # # # # # # # # # # # # # # #
 
 # home page where you will be prompted to host or join a game
 # testing something, not final
@@ -44,29 +23,15 @@ def initialize():
 @app.route("/", methods=["GET", "POST"])
 def home():
     # will redirect to host or join depending on what theu choose
-    form = HostForm(request.form)
+    form = JoinForm(request.form)
     if form.validate_on_submit():
         flash('Happy gaming :)!')
-        redirect(url_for('host'))
+        redirect(url_for('wait'))
     return render_template('home.html', form=form)
 
 
-@app.route("/host", methods=["GET", "POST"])
-def host():
-    return 'oof'
-
-@app.route("/join", methods=["GET", "POST"])
-def join():
-    pass
-
-# shows up while waiting for people to join, will have a "begin" button kind of like kahoot
-@app.route("/waiting", methods=["GET", "POST"])
-def host_waiting():
-    pass
-
-
 @app.route("/wait", methods=["GET", "POST"])
-def player_wait():
+def wait():
     pass
 
 
@@ -74,6 +39,42 @@ def player_wait():
 @app.route("/play", methods=["GET", "POST"])
 def play():
     pass
+
+
+# # # # # # # # # # # # # # # # # #
+# Transition to handling sockets  #
+# # # # # # # # # # # # # # # # # #
+
+# initialize new connection 
+@socketio.on('connected')
+def join_lobby(person):
+    name = person['username']
+    join_room('lobby')
+    print(f'{name} joined')
+
+# none of these have to be functions specifically as they can just be events in a loop
+# they can be socketio.on_event('signal', function(arg)) as we're using a while loop for the game
+@socketio.on('ready')
+def ready():
+    pass
+
+while True:
+    socketio.on_event('play', None)
+    socketio.on_event('draw', None)
+    socketio.on_event('+2', None)
+    socketio.on_event('+4', None)
+    socketio.on_event('skip', None)
+    socketio.on_event('reverse', None)
+    socketio.on_event('color swap', None)
+
+"""
+socketio.to('room').emit('message') is a thing
+ 
+when lobby has 4 players
+new room with id = str(time.time())
+for player in players: join_room(id)
+
+"""
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
