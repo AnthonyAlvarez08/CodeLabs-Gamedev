@@ -56,12 +56,19 @@ while True:
         print('you have no cards that can be played!')
         choice = input('would you like to skip your turn or draw a card? (skip/draw)  ')
         if choice == 'skip' or choice == 's':
-            f += increment
+            if f >= numPlayers - 1:
+                f=0
+            elif f<0:  
+                 f += increment
+            print('\nOn top of the pile is a', previousCard)
+            print(f'{players[f].name}\'s cards are:')
+            for i, card in enumerate(players[f].hand):
+                print(i, card)
             continue
         elif choice == 'draw' or choice == 'd':
             # need to print hand again
             players[f].draw_card()
-            print(f'New card is {players[f].hand(players[f].numCards - 1)}')
+            print(str(players[f].numCards-1) + ' New card is ' + str(players[f].hand[players[f].numCards - 1]))
 
 
             

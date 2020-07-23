@@ -4,9 +4,8 @@ mingjie avialble after 6pm eastern
 TODO: rooms, fix uno reverse logic, hook up uno logic to this, rooms
 TODO: player class, non generator deck
 """
-
 from flask import Flask, render_template, url_for, flash, redirect, request
-from recieveData import JoinForm
+from receiveData import JoinForm
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 from time import time
