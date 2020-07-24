@@ -56,10 +56,11 @@ while True:
         print('you have no cards that can be played!')
         choice = input('would you like to skip your turn or draw a card? (skip/draw)  ')
         if choice == 'skip' or choice == 's':
-            if f >= numPlayers - 1:
-                f=0
-            elif f<0:  
-                 f += increment
+            f += increment
+            if f>=numPlayers: 
+                f=0 
+            elif f<0: 
+                f=numPlayers-1 
             print('\nOn top of the pile is a', previousCard)
             print(f'{players[f].name}\'s cards are:')
             for i, card in enumerate(players[f].hand):
@@ -85,14 +86,22 @@ while True:
     if previousCard.color == 'change':
         previousCard.color = color_change()
         
-    # maybe works
+    # maybe works: i think i got it to work 
     if previousCard.numAction == 'cancel':
-        if f == numPlayers - 2:
-            f = 0
-        elif f == 0:
-            f = numPlayers - 1
-        else:
-            f += 2 * increment
+        if increment>0: 
+            if f == numPlayers - 2:
+                f = 0
+            elif f == numPlayers-1:
+                f = 1
+            else: 
+                f += 2 * increment
+        else: 
+            if f==1: 
+                f=numPlayers-1 
+            elif f==0: 
+                f=numPlayers-2 
+            else: 
+                f+=2*increment 
         print('\nNext player has been skipped!')
         continue
 
