@@ -6,7 +6,7 @@ TODO: player class, non generator deck
 """
 from flask import Flask, render_template, url_for, flash, redirect, request
 from receiveData import JoinForm
-from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask_socketio import SocketIO, emit, join_room, leave_room, send
 from flask_cors import CORS
 from time import time
 import time
@@ -15,42 +15,80 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['SECRET_KEY'] = '975c9775521fd39cba0f67c131bdf4b7'
 socketio = SocketIO(app)
-#for now I am just making it four people per game 
-Q=[]
-ROOMS=dict() 
-size=4
-#ROOMS={"roomid":[player1,player2,player3,player4]}
+# for now I am just making it four people per game
+Q = []
+ROOMS = dict()
+inGame=dict()
+size = 4
+
+
+# ROOMS={"roomid":[[player1,F],[player2,F],[player3,F],[player4,F]]}
+#inGame={playersid:roomid}
 
 @app.route('/')
 def index():
-		return render_template('otherindex.html')
+    return render_template('otherindex.html')
+
 
 @socketio.on('connect')
 def on_create():
-	Q.append(request.sid)
-	if len(Q)>=size:
-		make_room()
-#creates and confirms that players are connected to a room by sending out ready signal
+    send("searching for a room...")
+    Q.append(request.sid)
+    if len(Q) >= size:
+        make_room()
+
+# creates and confirms that players are connected to a room by sending out ready signal
 def make_room():
-	roomid=str(time.time())
-	for i in range(size):
-		player=Q.pop(0)
-		join_room(roomid,player)
-		emit('join_room', {'user':player}, room=roomid)
-		send(player+ " has entered the room " + roomid, room=roomid)
-	socketio.emit('ready', room=roomid, callback= ready_to_begin)
-	return
+    roomid = str(time.time())
+    for i in range(size):
+        player = Q.pop(0)
+        join_room(roomid, player)
+        ROOMS.setdefault(roomid,[])
+        ROOMS[roomid].append([player,False])
+        emit('join_room', {'user': player}, room=roomid)
+        print(player + " has entered the room " + roomid)
+        send("are you ready?", room=player)
+    socketio.emit('ready', room=roomid)
+    #start some sort of countdown
 
-#its supposed to be that if the emit receives a signal back it should trigger ready_to_begin as a callback but I don't think i did it right ** 
+#mega ack confirm user and/ or if all users in a room are ready then starts game
+@socketio.on('ready')
+def confirm_ready():
+    print("received ready signal from "+request.sid)
+    val_list=list(ROOMS.values())
+    key_list=list(ROOMS.keys())
+    i=0
 
-def ready_to_begin(event):
-	print("received ready signal from client")
+    for val in val_list:
+        for v in val:
+            if v[0]==request.sid:
+                v[1]=True
+    for k in key_list:
+        for people in (ROOMS.get(k)):
+            if people[1]==True:
+                i+=1
+                if i==size:
+                    send("game is starting :D", room=k)
+                    move_to_in_game(k)
+                    del ROOMS[k]
+                    print(ROOMS)
+                    print(inGame)
+                    #startGame() function with game code
+                    print("game in "+k+ " is starting")
+        i=0
+
+@socketio.on('not_ready')
+def back_to_queue():
+    print("q time")
+
+#move ready confirmed users from ROOMS to inGame
+def move_to_in_game(ri):#room id
+    players=ROOMS[ri]
+    for player in players:
+        inGame[player[0]]=ri
 
 
-@socketio.on('message')
-def handleMessage(msg):
-	print('Message: ' + msg)
-	send(msg, broadcast=True)
+
 
 
 """
@@ -96,7 +134,7 @@ def join_lobby(person):
 @socketio.on('ready')
 def ready():
     pass
-"""
+
 while True:
     socketio.on_event('play', None)
     socketio.on_event('draw', None)
@@ -106,14 +144,13 @@ while True:
     socketio.on_event('reverse', None)
     socketio.on_event('color swap', None)
 
-"""
+
 socketio.to('room').emit('message') is a thing
  
 when lobby has 4 players
 new room with id = str(time.time())
 for player in players: join_room(id)
-
 """
 
 if __name__ == '__main__':
-	socketio.run(app, debug=True)
+    socketio.run(app, debug=True)
