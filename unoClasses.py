@@ -25,6 +25,7 @@ and two each of "Skip," "Draw Two," and "Reverse."
 These last three types are known as "action cards."
 """
 
+
 def new_deck():
     # standard uno deck
     normal_deck = [
@@ -58,21 +59,31 @@ def new_deck():
 
 class Player:
 
-    playerDeck = new_deck()
+    # new_deck returns a map object which is exhaustable, needs to be refreshed
+    deck = new_deck()
+    poolCard = next(deck)
 
     def __init__(self, name):
         self.name = name
         self.hand = list()
         for i in range(7):
             self.draw_card()
+        print(f'Welcome {name}!')
 
     @classmethod
     def refresh_deck(cls):
-        cls.playerDeck = new_deck()
+        cls.deck = new_deck()
+        print('deck reshuffled!')
+
+    # the front end will handle valid moves
+    def handle_move(self):
+        pass
 
     def draw_card(self):
+        print('time to draw!')
         try:
-            self.hand.append(next(Player.playerDeck))
+            self.hand.append(next(Player.deck))
         except StopIteration:
             Player.refresh_deck()
-            self.hand.append(next(Player.playerDeck))
+            self.hand.append(next(Player.deck))
+            
