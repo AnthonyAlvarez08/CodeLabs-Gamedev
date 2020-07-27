@@ -58,15 +58,21 @@ class Player:
         self.numCards = len(self.hand)
 
     def play_card(self, previousCard):
-        index = int(input('what card to play (select number)?  '))
 
         acceptable = False
+
+        try: 
+            index = int(input('what card to play (select number)?  '))
+        except ValueError: 
+            print('Select the number corresponding to the card')
+            return 'unacceptable'
 
         try:
             assert self.numCards > index
         except AssertionError:
             print('You can\'t play that card')
             return 'unacceptable'
+        
             
         if previousCard.color == self.hand[index].color:
             acceptable = True

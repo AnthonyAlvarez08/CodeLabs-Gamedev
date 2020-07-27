@@ -1,0 +1,10 @@
+* {
+    margin: 5px 5px;
+}
+
+#text-box {
+    margin: 5px;
+    border-style: solid;
+    padding: 5px;
+    display: inline-block;
+}

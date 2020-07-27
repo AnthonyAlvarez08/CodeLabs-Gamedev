@@ -1,0 +1,114 @@
+<!--!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content= "width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{url_for('static', filename= 'style.css') }}">
+    <title>UNO :D</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+        integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script type="text/javascript" src="{{url_for('static',filename='script.js') }}" defer></script>
+
+</head>
+
+<body>
+<script type="text/javascript">
+$(document).ready(function() {
+
+	var socket = io.connect('http://127.0.0.1:5000');
+
+    <h3 id="text-box">text goes here</h3>
+    <form>
+        <label for="input-box">Type something here:</label>
+        <input type="text" id="input-box">
+    </form>
+    <button id="send-btn">testbtn</button>
+
+</body>
+
+</html>
+tbd
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+    <meta name="viewport" content= "width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{url_for('static', filename= 'style.css') }}">
+    <title>UNO :D</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+        integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="{{url_for('static',filename='script.js') }}" defer></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+</head>
+<body>
+
+    <p id="timer"></p>
+    <ul id="messages"></ul>
+    <input type="text" id="myMessage">
+    <button id="sendbutton" style="display: none;">Send</button>
+
+
+<script type="text/javascript">
+$(document).ready(function() {
+    //constant for stopping timer early
+    var earlyReady= false;
+//for some reason this won't work when i put it in script.js :S
+
+
+	socket.on('ready',function(msg){
+	    var button= document.createElement("button")
+	    var buttonText = document.createTextNode("Ready")
+	    button.appendChild(buttonText)
+	    button.addEventListener('click', confirmReady)
+        button.addEventListener('click', stopTimer)
+	    document.body.appendChild(button)
+
+        var t=document.getElementById("timer");
+        var time=60; //60 sec countdown
+        var timer= setInterval( function(){
+            if (time==-1) {
+                clearTimeout(timer);
+                socket.emit('not_ready');
+                console.log('user failed to confirm ready');
+                button.removeEventListener('click', confirmReady);
+                button.removeEventListener('click',stopTimer);
+                t.innerHTML="ready was not confirmed...being placed back in queue";
+            }
+
+            else if (earlyReady==true){
+                clearTimeout(timer); // stops timer and exits setinterval
+                button.removeEventListener('click', confirmReady);
+                button.removeEventListener('click',stopTimer);
+                t.innerHTML="ready was confirmed! please wait for other players to also confirm";
+                earlyReady=false;
+            }
+
+            else {
+                t.innerHTML= time + ' seconds remaining to confirm ready';
+                document.body.appendChild(t);
+                time--;
+
+            }
+        }, 1000);
+
+
+	});
+
+	function confirmReady(){
+            console.log('user ready');
+            socket.emit('ready');
+        }
+
+    function stopTimer(){
+        console.log('stopping timer early bc user confirmed ready');
+        earlyReady=true;
+    }
+
+ });
+</script>
+
+</body>
+</html>
