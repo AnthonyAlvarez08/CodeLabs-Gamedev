@@ -61,7 +61,7 @@ class Player:
 
     # new_deck returns a map object which is exhaustable, needs to be refreshed
     deck = new_deck()
-    poolCard = next(deck)
+    # poolCard = next(deck)
 
     def __init__(self, name):
         self.name = name

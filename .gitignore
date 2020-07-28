@@ -14,5 +14,5 @@ build/
 *.egg-info/
 
 .vscode/
-
+.idea/
 oof.py
