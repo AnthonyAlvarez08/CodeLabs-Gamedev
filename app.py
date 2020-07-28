@@ -146,7 +146,8 @@ def process_move(card, hand):
             increment *= -1
 
         if card.color == 'wild':
-            color_swap()
+            # color_swap()
+            pass
 
         # handles both +4 and +2
         if card.action[0] == '+':
