@@ -55,6 +55,7 @@ def make_room():
 @socketio.on('ready')
 def confirm_ready():
     print("received ready signal from "+request.sid)
+    send("ready was confirmed! please wait for other players to also confirm")
     val_list=list(ROOMS.values())
     key_list=list(ROOMS.keys())
     i=0
@@ -71,15 +72,37 @@ def confirm_ready():
                     send("game is starting :D", room=k)
                     move_to_in_game(k)
                     del ROOMS[k]
-                    print(ROOMS)
-                    print(inGame)
                     #startGame() function with game code
                     print("game in "+k+ " is starting")
         i=0
 
 @socketio.on('not_ready')
 def back_to_queue():
-    print("q time")
+    nrplayer= request.sid
+    keys=list(ROOMS.keys())
+    room=""
+    #find the room that failed to get 4 readys 
+    for k in keys:
+        players=ROOMS.get(k)
+        for player in players:
+            if player[0]==nrplayer:
+                room=k
+                break
+        if room!="":
+            break
+    #for multiple not readys 
+    if room=="": 
+        return 
+
+    emit('refresh',room=room)
+    time.sleep(5)
+
+    players=ROOMS.get(room)
+    for player in players: 
+        leave_room(room,player[0])
+    del ROOMS[room]
+   
+    
 
 #move ready confirmed users from ROOMS to inGame
 def move_to_in_game(ri):#room id
@@ -88,10 +111,12 @@ def move_to_in_game(ri):#room id
         inGame[player[0]]=ri
 
 
-
-
-
+    
 """
+
+
+
+
 #commenting this out for now _ 
 # home page where you will be prompted to host or join a game
 # testing something, not final
