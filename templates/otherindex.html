@@ -41,7 +41,7 @@ tbd
         integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
     <script type="text/javascript" src="{{url_for('static',filename='script.js') }}" defer></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-
+    <link rel="some icon" href=""> <!--not required but w/o it the console shows a favicon error-->
 </head>
 <body>
 
@@ -75,14 +75,12 @@ $(document).ready(function() {
                 console.log('user failed to confirm ready');
                 button.removeEventListener('click', confirmReady);
                 button.removeEventListener('click',stopTimer);
-                t.innerHTML="ready was not confirmed...being placed back in queue";
+                t.innerHTML="ready was not confirmed by all users...being placed back in the queue! Page will refresh in a moment!";
             }
 
             else if (earlyReady==true){
-                clearTimeout(timer); // stops timer and exits setinterval
                 button.removeEventListener('click', confirmReady);
-                button.removeEventListener('click',stopTimer);
-                t.innerHTML="ready was confirmed! please wait for other players to also confirm";
+                button.removeEventListener('click',stopTimer); 
                 earlyReady=false;
             }
 
@@ -103,9 +101,12 @@ $(document).ready(function() {
         }
 
     function stopTimer(){
-        console.log('stopping timer early bc user confirmed ready');
         earlyReady=true;
     }
+
+    socket.on('refresh', function(){
+        window.location.reload(false); 
+    }); 
 
  });
 </script>
