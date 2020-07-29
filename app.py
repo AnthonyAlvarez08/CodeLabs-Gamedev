@@ -12,7 +12,7 @@ socketio = SocketIO(app)
 Q = []
 ROOMS = dict()
 inGame = dict()
-size = 4
+size = 4 #size of the room--> can make some function to change this for each room later 
 
 
 # ROOMS={"roomid":[[player1,F],[player2,F],[player3,F],[player4,F]]}
@@ -47,13 +47,15 @@ def make_room():
         print(player + " has entered the room " + roomid)
         send("are you ready?", room=player)
     socketio.emit('ready', room=roomid)
-    # start some sort of countdown
+    # start some sort of countdown-->countdown in html
 
 
 # mega ack confirm user and/ or if all users in a room are ready then starts game
 @socketio.on('ready')
 def confirm_ready():
     print("received ready signal from "+ request.sid)
+    #tells client their ready signal has been accounted for 
+    send("ready has been noted! please wait for other players to confirm ready")
     val_list = list(ROOMS.values())
     key_list = list(ROOMS.keys())
     i = 0
@@ -79,7 +81,7 @@ def confirm_ready():
 
 @socketio.on('not_ready')
 def back_to_queue():
-    pnrplayer = request.sid
+    nrplayer = request.sid
     keys = list(ROOMS.keys())
     room = ""
     #find the room that failed to get 4 readys 
@@ -180,6 +182,7 @@ def game(room, players):
             f = 3
         else:
             f += increment
+
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, port=5000, host='127.0.0.1')
