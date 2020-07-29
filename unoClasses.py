@@ -4,6 +4,7 @@ class Card:
 
     def __init__(self, string):
         isAction, num, color, *action = string.split()
+        self.identity = string
         self.isAction = bool(int(isAction))
         self.num = int(num)
         self.color = str(color)
@@ -61,7 +62,6 @@ class Player:
 
     # new_deck returns a map object which is exhaustable, needs to be refreshed
     deck = new_deck()
-    # poolCard = next(deck)
 
     def __init__(self, name):
         self.name = name

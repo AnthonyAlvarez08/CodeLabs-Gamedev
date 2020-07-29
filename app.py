@@ -12,7 +12,7 @@ socketio = SocketIO(app)
 Q = []
 ROOMS = dict()
 inGame = dict()
-size = 4 #size of the room--> can make some function to change this for each room later 
+size = 4 # size of the room--> can make some function to change this for each room later 
 
 
 # ROOMS={"roomid":[[player1,F],[player2,F],[player3,F],[player4,F]]}
@@ -112,42 +112,6 @@ def move_to_in_game(ri):  # room id
     for player in players:
         inGame[player[0]] = ri
 
-# the front end  should handle which cards are playable
-def process_move(card, hand, f, increment, poolCard):
-    hand.remove(card)
-
-    if card.isAction:
-        if card.action == 'skip':
-            if increment == 1:
-                if f == 3:
-                    f = 0
-                else:
-                    f += 2
-            else:
-                if f == 0:
-                    f = 2
-                else:
-                    f -= 2
-        if card.action == 'reverse':
-            increment *= -1
-
-        if card.color == 'wild':
-            # color_swap()
-            pass
-
-        # handles both +4 and +2
-        if card.action[0] == '+':
-            times = int(card.action[1])
-            for i in range(times):
-                # next player.draw_card()
-                pass
-
-    poolCard = card 
-
-
-def color_swap():
-    pass
-
 def game(room, players):
 
     # variables to iterate through turns
@@ -155,17 +119,66 @@ def game(room, players):
     increment = 1
     poolCard = next(Player.deck)
     players = [Player(p) for p in players]
+    drawSignal = False
+
+    # the front end  should handle which cards are playable
+    # it will be created everytime the function is run but it is only run once per game so it shouldn't be too much of  a problem
+    def process_move(card, hand):
+        card = Card(card)
+        global size
+        nonlocal f; nonlocal increment
+        nonlocal poolCard; nonlocal players
+        nonlocal drawSignal
+        hand.remove(card)
+
+        if card.isAction:
+            # handles both +4 and +2
+            if card.action[0] == '+':
+                times = int(card.action[1])
+                for i in range(times):
+                    players[f + increment].draw_card()
+            
+            # because draw skips as well
+            if card.action == 'skip' or card.action[0] == '+':
+                if increment == 1:
+                    if f == size - 1:
+                        f = 0
+                    else:
+                        f += 2
+                else:
+                    if f == 0:
+                        f = 2
+                    else:
+                        f -= 2
+            if card.action == 'reverse':
+                increment *= -1
+
+            if card.color == 'wild':
+                newColor = None
+                while not (newColor in ['green', 'yellow', 'red', 'blue']):
+                    emit('newColor')
+
+            
+
+        poolCard = card
 
     while True:
         # so front end can handle which cards are playable
-        socketio.emit('pool', poolCard, room=room)
+        socketio.emit('pool', poolCard.identity, room=room)
         cPlayer = players[f]
+        numCards = len(cPlayer.hand)
         # should work maybe
         socketio.to(cPlayer.name).emit('unlock')
 
-        # python doesn't have pass by reference this hould not work
-        socketio.on_event('play', process_move(data, cPlayer.hand, f, increment, poolCard))
-        socketio.on_event('draw', cPlayer.draw_card())
+        # data should be a string, check unoClasses to see formatting
+        socketio.on_event('play', process_move(data, cPlayer.hand))
+        
+        # draw twice then skip
+        if numCards <= len(cPlayer.hand) + 2:
+            socketio.on_event('draw', cPlayer.draw_card())
+        else:
+            print('Can\'t draw anymore, skipped')
+            socketio.to(cPlayer.name).emit('draw limit')
 
         
         if len(cPlayer.hand) == 0:
@@ -176,10 +189,10 @@ def game(room, players):
 
         # it is 4 players per room so this will do
         socketio.to(cPlayer.name).emit('lock')
-        if f == 3 and increment == 1:
+        if f == size - 1 and increment == 1:
             f = 0
         elif f == 0 and increment == -1:
-            f = 3
+            f = size - 1
         else:
             f += increment
 
