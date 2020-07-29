@@ -45,7 +45,7 @@ tbd
     <ul id="messages"></ul>
     <input type="text" id="myMessage">
     <button id="sendbutton" style="display: none;">Send</button>
-
+    
 
     <script type="text/javascript">
         $(document).ready(function () {
@@ -78,6 +78,7 @@ tbd
                         button.removeEventListener('click', confirmReady);
                         button.removeEventListener('click', stopTimer);
                         earlyReady = false;
+                        button.remove()
                     }
 
                     else {
@@ -86,6 +87,10 @@ tbd
                         time--;
 
                     }
+                    socket.on('gamestart',function(){
+                        clearTimeout(timer); 
+                        t.innerHTML=""
+                    });
                 }, 1000);
 
 
@@ -103,6 +108,14 @@ tbd
             socket.on('refresh', function () {
                 window.location.reload(false);
             });
+
+            socket.on('game_display', function(message){
+                var box= document.getElementById("game"); 
+                box.innerHTML=message;
+
+            }); 
+
+            
 
         });
     </script>
