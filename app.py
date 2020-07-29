@@ -1,14 +1,6 @@
-"""
-Here is where the web app will run
-mingjie avialble after 6pm eastern
-TODO: rooms, hook up uno logic to this, rooms
-TODO: player class, non generator deck
-"""
-from flask import Flask, render_template, url_for, flash, redirect, request
-from receiveData import JoinForm
+from flask import Flask, render_template, url_for, request
 from flask_socketio import SocketIO, emit, join_room, leave_room, send
 from flask_cors import CORS
-from receiveData import JoinForm
 import time
 from unoClasses import Player, Card
 
@@ -118,16 +110,8 @@ def move_to_in_game(ri):  # room id
     for player in players:
         inGame[player[0]] = ri
 
-
-# variables to iterate through turns
-f = 0
-increment = 1
-poolCard = next(Player.deck)
-
-# the front end 
-def process_move(card, hand):
-    global f; global increment; global poolCard
-
+# the front end  should handle which cards are playable
+def process_move(card, hand, f, increment, poolCard):
     hand.remove(card)
 
     if card.isAction:
@@ -162,25 +146,40 @@ def process_move(card, hand):
 def color_swap():
     pass
 
-while True:
-    # socketio.on_event('play', process_move(data, hand=player.hand))
-    # socketio.on_event('draw', player.draw_card())
+def game(room, players):
 
-    
-    # if len(player.hand) == 0:
-    #     print('game has ended')
-    #     socketio.to(room).emit('end', player)
-    #     break
-    
+    # variables to iterate through turns
+    f = 0
+    increment = 1
+    poolCard = next(Player.deck)
+    players = [Player(p) for p in players]
 
-    # it is 4 players per room so this will do
-    if f == 3 and increment == 1   :
-        f = 0
-    elif f == 0 and increment == -1:
-        f = 3
-    else:
-        f += increment
+    while True:
+        # so front end can handle which cards are playable
+        socketio.emit('pool', poolCard, room=room)
+        cPlayer = players[f]
+        # should work maybe
+        socketio.to(cPlayer.name).emit('unlock')
+
+        # python doesn't have pass by reference this hould not work
+        socketio.on_event('play', process_move(data, cPlayer.hand, f, increment, poolCard))
+        socketio.on_event('draw', cPlayer.draw_card())
+
+        
+        if len(cPlayer.hand) == 0:
+            print('game has ended')
+            socketio.to(room).emit('end', player)
+            break
+        
+
+        # it is 4 players per room so this will do
+        socketio.to(cPlayer.name).emit('lock')
+        if f == 3 and increment == 1:
+            f = 0
+        elif f == 0 and increment == -1:
+            f = 3
+        else:
+            f += increment
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, port=5000, host='127.0.0.1')
-# deck
