@@ -56,6 +56,7 @@ def confirm_ready():
     print("received ready signal from "+ request.sid)
     #tells client their ready signal has been accounted for 
     send("ready has been noted! please wait for other players to confirm ready")
+    players=[] 
     val_list = list(ROOMS.values())
     key_list = list(ROOMS.keys())
     i = 0
@@ -68,15 +69,15 @@ def confirm_ready():
         for people in (ROOMS.get(k)):
             if people[1]:
                 i += 1
+                players.append(people[0])
                 if i == size:
                     send("game is starting :D", room=k)
                     move_to_in_game(k)
                     del ROOMS[k]
-                    print(ROOMS)
-                    print(inGame)
                     #gamestart stops the countdown 
-                    emit("gamestart",room=k)
-                    start_game(k)
+                    emit('gamestart',room=k) 
+                    start_game(k, players)
+                    #game(k,players)
                     print("game in " + k + " is starting")
         i = 0
 
@@ -116,8 +117,8 @@ def move_to_in_game(ri):  # room id
 """
 def start_game(room): 
     #making the game text box 
-    emit("game_display", "hi",room=room)
-    
+    emit('game_display', "hi",room=room)
+
     values=list(inGame.values())
     for v in val: 
 """
@@ -129,7 +130,11 @@ def game(room, players):
     increment = 1
     poolCard = next(Player.deck)
     players = [Player(p) for p in players]
-    drawSignal = False
+
+    # emit hands to players
+    for i in players:
+        # b.identity because we're using strings for the front end
+        socketio.emit('hand', [b.identity for b in i.hand], room=i.name)
 
     # the front end  should handle which cards are playable
     # it will be created everytime the function is run but it is only run once per game so it shouldn't be too much of  a problem
@@ -138,7 +143,6 @@ def game(room, players):
         global size
         nonlocal f; nonlocal increment
         nonlocal poolCard; nonlocal players
-        nonlocal drawSignal
         hand.remove(card)
 
         if card.isAction:
@@ -164,9 +168,10 @@ def game(room, players):
                 increment *= -1
 
             if card.color == 'wild':
-                newColor = None
-                while not (newColor in ['green', 'yellow', 'red', 'blue']):
-                    emit('newColor')
+                pass
+                # newColor = None
+                # while not (newColor in ['green', 'yellow', 'red', 'blue']):
+                #     emit('newColor')
 
             
 
@@ -178,27 +183,28 @@ def game(room, players):
         cPlayer = players[f]
         numCards = len(cPlayer.hand)
         # should work maybe
-        socketio.to(cPlayer.name).emit('unlock')
+        socketio.emit('unlock', room=cPlayer.name)
 
-        # data should be a string, check unoClasses to see formatting
+        # data should be a string, check unoClasses > new_deck > normal_deck to see formatting
         socketio.on_event('play', process_move(data, cPlayer.hand))
         
         # draw twice then skip
         if numCards <= len(cPlayer.hand) + 2:
             socketio.on_event('draw', cPlayer.draw_card())
+            socketio.emit('hand', [b.identity for b in cPlayer.hand], room=cPlayer.name)
         else:
             print('Can\'t draw anymore, skipped')
-            socketio.to(cPlayer.name).emit('draw limit')
+            socketio.emit('draw limit', room=cPlayer.name)
 
         
         if len(cPlayer.hand) == 0:
             print('game has ended')
-            socketio.to(room).emit('end', player)
+            socketio.emit('end', room=room)
             break
         
 
         # it is 4 players per room so this will do
-        socketio.to(cPlayer.name).emit('lock')
+        socketio.emit('lock', room=cPlayer.name)
         if f == size - 1 and increment == 1:
             f = 0
         elif f == 0 and increment == -1:
