@@ -74,7 +74,9 @@ def confirm_ready():
                     del ROOMS[k]
                     print(ROOMS)
                     print(inGame)
-                    # startGame() function with game code
+                    #gamestart stops the countdown 
+                    emit("gamestart",room=k)
+                    start_game(k)
                     print("game in " + k + " is starting")
         i = 0
 
@@ -111,6 +113,14 @@ def move_to_in_game(ri):  # room id
     players = ROOMS[ri]
     for player in players:
         inGame[player[0]] = ri
+"""
+def start_game(room): 
+    #making the game text box 
+    emit("game_display", "hi",room=room)
+    
+    values=list(inGame.values())
+    for v in val: 
+"""
 
 def game(room, players):
 
