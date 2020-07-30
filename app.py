@@ -179,8 +179,6 @@ def game(room, players):
             if card.color == 'wild':
                 while not (poolCard.color in ['green', 'yellow', 'red', 'blue']):
                     socketio.emit('newColor', room=cPlayer.name)
-
-                    # might not be the best way to do it but it works, opening in write mode creates a file
                     socketio.on_event('newColor', set_color)
 
 
