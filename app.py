@@ -130,6 +130,7 @@ def game(room, players):
     increment = 1
     poolCard = next(Player.deck)
     players = [Player(p) for p in players]
+    cPlayer = None
 
     # emit hands to players
     for i in players:
@@ -143,7 +144,9 @@ def game(room, players):
         global size
         nonlocal f; nonlocal increment
         nonlocal poolCard; nonlocal players
+        nonlocal cPlayer
         hand.remove(card)
+        poolCard = card
 
         if card.isAction:
             # handles both +4 and +2
@@ -168,14 +171,16 @@ def game(room, players):
                 increment *= -1
 
             if card.color == 'wild':
-                pass
-                # newColor = None
-                # while not (newColor in ['green', 'yellow', 'red', 'blue']):
-                #     emit('newColor')
+                newColor = None
+                while not (newColor in ['green', 'yellow', 'red', 'blue']):
+                    socketio.emit('newColor', room=cPlayer.name)
 
-            
+                    # might not be the best way to do it but it works, opening in write mode creates a file
+                    socketio.on_event('newColor', print(data, file=open('ha.txt', 'w')))
+                    newColor = open('ha.txt', 'r').readline().strip()
 
-        poolCard = card
+                poolCard.color = newColor
+
 
     while True:
         # so front end can handle which cards are playable
