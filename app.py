@@ -139,15 +139,19 @@ def game(room, players):
         socketio.emit('hand', [b.identity for b in i.hand], room=i.name)
         
 
+    def set_color(color):
+        nonlocal poolCard
+        poolCard.color = color
+
     # the front end  should handle which cards are playable
     # it will be created everytime the function is run but it is only run once per game so it shouldn't be too much of  a problem
-    def process_move(card, hand):
+    def process_move(card):
         card = Card(card)
         global size
         nonlocal f; nonlocal increment
         nonlocal poolCard; nonlocal players
         nonlocal cPlayer
-        hand.remove(card)
+        cPlayer.hand.remove(card)
         poolCard = card
 
         if card.isAction:
@@ -173,15 +177,11 @@ def game(room, players):
                 increment *= -1
 
             if card.color == 'wild':
-                newColor = None
-                while not (newColor in ['green', 'yellow', 'red', 'blue']):
+                while not (poolCard.color in ['green', 'yellow', 'red', 'blue']):
                     socketio.emit('newColor', room=cPlayer.name)
 
                     # might not be the best way to do it but it works, opening in write mode creates a file
-                    socketio.on_event('newColor', print(data, file=open('ha.txt', 'w')))
-                    newColor = open('ha.txt', 'r').readline().strip()
-
-                poolCard.color = newColor
+                    socketio.on_event('newColor', set_color)
 
 
     while True:
@@ -195,11 +195,11 @@ def game(room, players):
         socketio.emit('turn', f, room=room) 
 
         # data should be a string, check unoClasses > new_deck > normal_deck to see formatting
-        socketio.on_event('play', process_move(data, cPlayer.hand))
+        socketio.on_event('play', process_move)
         
         # draw twice then skip
         if numCards <= len(cPlayer.hand) + 2:
-            socketio.on_event('draw', cPlayer.draw_card())
+            socketio.on_event('draw', cPlayer.draw_card)
             socketio.emit('hand', [b.identity for b in cPlayer.hand], room=cPlayer.name)
         else:
             print('Can\'t draw anymore, skipped')
