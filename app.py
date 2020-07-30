@@ -128,8 +128,8 @@ def game(room, players):
     poolCard = next(Player.deck)
     players = [Player(p) for p in players]
     cPlayer = None
-    pnum = 0
-    
+    pnum = 1
+
     # emit hands to players
     for i in players:
         #to mark player's numbers 
