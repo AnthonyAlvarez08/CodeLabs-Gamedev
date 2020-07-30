@@ -60,7 +60,7 @@ def new_deck():
     while normalDeck[0][0] == '1':
         shuffle(normalDeck)
 
-    return map(Card, normal_deck)
+    return map(Card, normalDeck)
 
 
 class Player:
