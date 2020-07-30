@@ -76,8 +76,8 @@ def confirm_ready():
                     del ROOMS[k]
                     #gamestart stops the countdown 
                     emit('gamestart',room=k) 
-                    start_game(k, players)
-                    #game(k,players)
+                    start_game(k)
+                    game(k,players)
                     print("game in " + k + " is starting")
         i = 0
 
@@ -114,14 +114,11 @@ def move_to_in_game(ri):  # room id
     players = ROOMS[ri]
     for player in players:
         inGame[player[0]] = ri
-"""
+
 def start_game(room): 
     #making the game text box 
-    emit('game_display', "hi",room=room)
+    emit('game_display', room=room)
 
-    values=list(inGame.values())
-    for v in val: 
-"""
 
 def game(room, players):
 
@@ -131,11 +128,16 @@ def game(room, players):
     poolCard = next(Player.deck)
     players = [Player(p) for p in players]
     cPlayer = None
-
+    pnum = 0
+    
     # emit hands to players
     for i in players:
+        #to mark player's numbers 
+        socketio.emit('playernum', pnum, room=i.name)
+        pnum += 1 
         # b.identity because we're using strings for the front end
         socketio.emit('hand', [b.identity for b in i.hand], room=i.name)
+        
 
     # the front end  should handle which cards are playable
     # it will be created everytime the function is run but it is only run once per game so it shouldn't be too much of  a problem
@@ -189,6 +191,8 @@ def game(room, players):
         numCards = len(cPlayer.hand)
         # should work maybe
         socketio.emit('unlock', room=cPlayer.name)
+        #to show which player's turn it is 
+        socketio.emit('turn', f, room=room) 
 
         # data should be a string, check unoClasses > new_deck > normal_deck to see formatting
         socketio.on_event('play', process_move(data, cPlayer.hand))
