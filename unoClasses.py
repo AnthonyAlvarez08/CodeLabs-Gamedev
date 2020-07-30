@@ -29,7 +29,7 @@ These last three types are known as "action cards."
 
 def new_deck():
     # standard uno deck
-    normal_deck = [
+    normalDeck = [
         "0 0 red", "0 1 red", "0 1 red", "0 2 red", "0 2 red", "0 3 red",
         "0 3 red", "0 4 red", "0 4 red", "0 5 red", "0 5 red", "0 6 red",
         "0 6 red", "0 7 red", "0 7 red", "0 8 red", "0 8 red", "0 9 red",
@@ -54,7 +54,12 @@ def new_deck():
         "1 -1 wild +4", "1 -1 wild wild", "1 -1 wild wild", "1 -1 wild wild",
         "1 -1 wild wild"
     ]
-    shuffle(normal_deck)
+    shuffle(normalDeck)
+
+    # make sure it doesn't start on an action card
+    while normalDeck[0][0] == '1':
+        shuffle(normalDeck)
+
     return map(Card, normal_deck)
 
 
