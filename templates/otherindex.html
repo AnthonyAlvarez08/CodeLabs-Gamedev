@@ -41,10 +41,17 @@ tbd
 
 <body>
 
-    <p id="timer"></p>
     <ul id="messages"></ul>
-    <input type="text" id="myMessage">
+    <p id="timer"></p>
+    <h3 id="topcard"></h3>
+    <p id="playerheader"></p>
+    <p id="game"></p>
+    <p id="notif"></p>
+    <input type="text" style="display: none;" id="input">
     <button id="sendbutton" style="display: none;">Send</button>
+    <p id="currentturn"></p>
+    
+    
     
 
     <script type="text/javascript">
@@ -52,7 +59,7 @@ tbd
             //constant for stopping timer early
             var earlyReady = false;
             //for some reason this won't work when i put it in script.js :S
-
+            //mainly pre game/ room setting up or kicking out code
 
             socket.on('ready', function (msg) {
                 var button = document.createElement("button")
@@ -78,7 +85,6 @@ tbd
                         button.removeEventListener('click', confirmReady);
                         button.removeEventListener('click', stopTimer);
                         earlyReady = false;
-                        button.remove()
                     }
 
                     else {
@@ -89,7 +95,8 @@ tbd
                     }
                     socket.on('gamestart',function(){
                         clearTimeout(timer); 
-                        t.innerHTML=""
+                        t.innerHTML="";
+                        button.remove(); 
                     });
                 }, 1000);
 
@@ -109,13 +116,6 @@ tbd
                 window.location.reload(false);
             });
 
-            socket.on('game_display', function(message){
-                var box= document.getElementById("game"); 
-                box.innerHTML=message;
-
-            }); 
-
-            
 
         });
     </script>
