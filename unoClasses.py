@@ -85,7 +85,7 @@ class Player:
         pass
 
     def draw_card(self):
-        print('time to draw!')
+        print('drew card')
         try:
             self.hand.append(next(Player.deck))
         except StopIteration:

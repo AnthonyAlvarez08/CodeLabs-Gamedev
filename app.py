@@ -77,8 +77,9 @@ def confirm_ready():
                     #gamestart stops the countdown 
                     emit('gamestart',room=k) 
                     start_game(k)
-                    game(k,players)
                     print("game in " + k + " is starting")
+                    game(k,players)
+                    print(inGame)
         i = 0
 
 
@@ -111,6 +112,8 @@ def back_to_queue():
 
 # move ready confirmed users from ROOMS to inGame
 def move_to_in_game(ri):  # room id
+    print('worked')
+    global inGame
     players = ROOMS[ri]
     for player in players:
         inGame[player[0]] = ri
@@ -129,14 +132,18 @@ def game(room, players):
     players = [Player(p) for p in players]
     cPlayer = None
     pnum = 1
+    playRev = False
+   
 
     # emit hands to players
+    # socketio.emit('pool', poolCard.identity, room=room)
     for i in players:
         #to mark player's numbers 
         socketio.emit('playernum', pnum, room=i.name)
         pnum += 1 
-        # b.identity because we're using strings for the front end
+        # b.identity because we're using strings for the front end, [b.identity for b in i.hand]
         socketio.emit('hand', [b.identity for b in i.hand], room=i.name)
+        # print([b.identity for b in i.hand])
         
 
     def set_color(color):
@@ -152,7 +159,7 @@ def game(room, players):
         nonlocal poolCard; nonlocal players
         nonlocal cPlayer
         cPlayer.hand.remove(card)
-        poolCard = card
+        poolCard = card 
 
         if card.isAction:
             # handles both +4 and +2
@@ -180,21 +187,34 @@ def game(room, players):
                 while not (poolCard.color in ['green', 'yellow', 'red', 'blue']):
                     socketio.emit('newColor', room=cPlayer.name)
                     socketio.on_event('newColor', set_color)
+    
+    def action(acard):
+        nonlocal playRev 
+        playRev=True
+        process_move(acard) 
 
-
+    time.sleep(3)
+    
     while True:
+        print(f'player {f}\'s turn')
         # so front end can handle which cards are playable
         socketio.emit('pool', poolCard.identity, room=room)
         cPlayer = players[f]
         numCards = len(cPlayer.hand)
+        socketio.emit('hand', [b.identity for b in cPlayer.hand], room=cPlayer.name)
         # should work maybe
-        socketio.emit('unlock', room=cPlayer.name)
+        # socketio.emit('unlock', room=cPlayer.name)
         #to show which player's turn it is 
         socketio.emit('turn', f, room=room) 
 
         # data should be a string, check unoClasses > new_deck > normal_deck to see formatting
-        socketio.on_event('play', process_move)
+        socketio.on_event('play', action)
+        while not playRev: 
+            print("waiting")
+            
         
+        playRev = False 
+
         # draw twice then skip
         if numCards <= len(cPlayer.hand) + 2:
             socketio.on_event('draw', cPlayer.draw_card)
@@ -211,7 +231,7 @@ def game(room, players):
         
 
         # it is 4 players per room so this will do
-        socketio.emit('lock', room=cPlayer.name)
+        # socketio.emit('lock', room=cPlayer.name)
         if f == size - 1 and increment == 1:
             f = 0
         elif f == 0 and increment == -1:
