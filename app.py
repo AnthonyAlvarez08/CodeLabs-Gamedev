@@ -15,8 +15,8 @@ inGame = dict()
 size = 4 # size of the room--> can make some function to change this for each room later 
 
 
-# ROOMS={"roomid":[[player1,F],[player2,F],[player3,F],[player4,F]]}
-# inGame={playersid:roomid}
+# ROOMS = {"roomid":[[player1,F],[player2,F],[player3,F],[player4,F]]}
+# inGame = {playersid:roomid}
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -25,7 +25,6 @@ def index():
 
 @socketio.on('connect')
 def on_create():
-    # global Q
     send("searching for a room...")
     print('searching for room')
     Q.append(request.sid)
@@ -119,7 +118,7 @@ def move_to_in_game(ri):  # room id
         inGame[player[0]] = ri
 
 def start_game(room): 
-    #making the game text box 
+    # making the game text box 
     emit('game_display', room=room)
 
 
@@ -130,7 +129,6 @@ def game(room, players):
     increment = 1
     poolCard = next(Player.deck)
     players = [Player(p) for p in players]
-    cPlayer = None
     pnum = 1
     playRev = False
    
@@ -157,8 +155,7 @@ def game(room, players):
         global size
         nonlocal f; nonlocal increment
         nonlocal poolCard; nonlocal players
-        nonlocal cPlayer
-        cPlayer.hand.remove(card)
+        players[f].hand.remove(card)
         poolCard = card 
 
         if card.isAction:
@@ -185,7 +182,7 @@ def game(room, players):
 
             if card.color == 'wild':
                 while not (poolCard.color in ['green', 'yellow', 'red', 'blue']):
-                    socketio.emit('newColor', room=cPlayer.name)
+                    socketio.emit('newColor', room=players[f].name)
                     socketio.on_event('newColor', set_color)
     
     def action(acard):
@@ -199,12 +196,11 @@ def game(room, players):
         print(f'player {f}\'s turn')
         # so front end can handle which cards are playable
         socketio.emit('pool', poolCard.identity, room=room)
-        cPlayer = players[f]
-        numCards = len(cPlayer.hand)
-        socketio.emit('hand', [b.identity for b in cPlayer.hand], room=cPlayer.name)
-        # should work maybe
-        # socketio.emit('unlock', room=cPlayer.name)
-        #to show which player's turn it is 
+        numCards = len(players[f].hand)
+        socketio.emit(
+            'hand', [b.identity for b in players[f].hand], room=players[f].name)
+        
+        # to show which player's turn it is 
         socketio.emit('turn', f, room=room) 
 
         # data should be a string, check unoClasses > new_deck > normal_deck to see formatting
@@ -216,22 +212,21 @@ def game(room, players):
         playRev = False 
 
         # draw twice then skip
-        if numCards <= len(cPlayer.hand) + 2:
-            socketio.on_event('draw', cPlayer.draw_card)
-            socketio.emit('hand', [b.identity for b in cPlayer.hand], room=cPlayer.name)
+        if numCards <= len(players[f].hand) + 2:
+            socketio.on_event('draw', players[f].draw_card)
+            socketio.emit(
+                'hand', [b.identity for b in players[f].hand], room=players[f].name)
         else:
             print('Can\'t draw anymore, skipped')
-            socketio.emit('draw limit', room=cPlayer.name)
+            socketio.emit('draw limit', room=players[f].name)
 
-        
-        if len(cPlayer.hand) == 0:
+        if len(players[f].hand) == 0:
             print('game has ended')
             socketio.emit('end', room=room)
             break
         
 
         # it is 4 players per room so this will do
-        # socketio.emit('lock', room=cPlayer.name)
         if f == size - 1 and increment == 1:
             f = 0
         elif f == 0 and increment == -1:

@@ -11,13 +11,6 @@ class Card:
         if self.isAction:
             self.action = action[0]
 
-    def __repr__(self):
-        if self.isAction:
-            return f'action {self.action} {self.color}'
-        return f'number {self.num} {self.color}'
-
-
-
 """
 The deck consists of 108 cards: four each of "Wild" and "Wild Draw Four,"
 and 25 each of four different colors (red, yellow, green, blue).
@@ -79,10 +72,6 @@ class Player:
     def refresh_deck(cls):
         cls.deck = new_deck()
         print('deck reshuffled!')
-
-    # the front end will handle valid moves
-    def handle_move(self):
-        pass
 
     def draw_card(self):
         print('drew card')
