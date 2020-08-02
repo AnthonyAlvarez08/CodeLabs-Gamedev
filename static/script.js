@@ -8,9 +8,9 @@
 
 //basic set up stuff
 
-var socket = io.connect('http://127.0.0.1:5000');
-currenthand=[];
-poolcard=""; 
+var socket = io.connect();
+var currenthand=[]; 
+var poolcard=""; 
 
 socket.on('connect', function () {
 	console.log("socket connected")
@@ -30,42 +30,39 @@ socket.on('message', function(msg) {
 
 socket.on('game_display', function(){
 
-	console.log("game displayed"); 
 	$(messages).empty();
 
 	var header=$("#topcard");
 	header.show();
-	header.html("");
 
 	var pheader=$("#playerheader"); 
 	pheader.show(); 
 
 	var box= $("#game"); 
-	box.innerHTML="";
+	box.html="";
 
 	var notif = $("#notif");
 	notif.show();
 
 	var command =$("#input"); 
 	command.show(); 
-	
+
+	var button= $("#sendbutton")
+
+
 	var cturn= $('#currentturn')
 	cturn.show(); 
 
 }); 
 
 socket.on('playernum', function(num){
-	console.log('NUM WAS REV')
 	var pheader=document.getElementById("playerheader"); 
 	pheader.innerText="YOUR CARDS (PLAYER "+ num +" ): \n"; 
 
 });
 
-
-
-//displays the players' hands also processes whether or not the user needs to draw bc they have no more avaliable cards 
+//displays the players' hands 
 socket.on('hand', function(cards){
-	console.log('hand was recv'); 
 	currenthand=cards; 
 	var box= document.getElementById("game"); 
 	box.innerHTML=""; 
@@ -76,7 +73,7 @@ socket.on('hand', function(cards){
 
 //displays top card to all players 
 socket.on('pool', function(pcard){
-	poolcard=pcard; 
+	poolcard=pcard;
 	var header=document.getElementById("topcard");
 	header.innerText= "top card: " + pcard; 
 });
@@ -99,57 +96,45 @@ socket.on('unlock', function() {
 
 	var button = $("#sendbutton"); 
 	button.show(); 
-
+/*
 	var command = $("#input"); 
 	len = currenthand.length; 
+	played=false;
 	
-	button.on('click', function() {
-		var played = false;
-		while(!played) {
-			var input = Number(command.val()); 
-			//insert something that actually checks if its actually a num 
-			if (input < 0 || input >= l){
-				set_notif("That isn't a valid card number! Please enter a number corresponding to the cards in your hand!"); 	
+	while(!played){
+		button.on('click',function(){
+			var input= (command.val()); 
+			if(Number.isInteger(input)) {
+				//insert something that checks if it's actually a num
+				if((input >= 0 && input < len)) {
+					if(playable(currenthand[input], poolcard)) {
+						socket.emit('play',{cid:currenthand[input],hand:currenthand});
+						played=true;
+						console.log("played a card");
+					}
+					else {
+						set_notif("That isn't a valid card number! Please enter a number corresponding to the cards in your hand!");
+					}
+				} else {
+					set_notif("That isn't a valid card number! Please enter a number corresponding to the cards in your hand!");
+				}
+			} else {
+				set_notif("Please enter a valid card number");
 			}
-			else if (!playable(currenthand[input])){
-				set_notif("This card isn't playable :( Please choose another card!");
-			}	
-			else {
-				emit('play',currenthand[input]); 
-				played = true;
-			}
-		}
+		});		
 		
-	});
+	}
+	*/
+
 
 });
 
-
 //function to set notif bc it's annoying to rewrite this code 
-function set_notif (message) {
+function set_notif (message){
 	var notif= document.getElementById("notif"); 
-	notif.innerText=message;
+	notif.innerText=message; 
 }
 
-// should be good
-function playable(card, pool) {
-	playable = false;
-	card = card.split(" ");
-	pool = pool.split(" ");
-	
-	if (card[3] == 'wild') {
-		playable = true;
-	}
 
-	if (pool[0] == '1' && card[0] == '1' && pool[3] == card[3]) {
-		playable = true;
-	}
 
-	for (var i = 1; i < 2; ++i) {
-		if (card[i] == pool[i]) {
-			playable = true;
-		}
-	}
 	
-	return playable; 
-} 

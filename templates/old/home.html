@@ -1,0 +1,10 @@
+{% extends "index.html" %}
+% from "index.html" import render_field %}
+{% block content %}
+<form method=post>
+    <div>
+        {{ render_field(form.name) }}
+        {{ render_field(form.confirmHost) }}
+    </div>
+</form>
+{% endblock %}

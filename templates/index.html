@@ -1,30 +1,135 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        {% if title %}
-        <title>Flask Blog - {{ title }}</title>
-        {% else %}
-        <title>Flask Blog</title>
-        {% endif %}
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-        <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}" defer></script>
+<!--!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content= "width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{url_for('static', filename= 'style.css') }}">
+    <title>UNO :D</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+        integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script type="text/javascript" src="{{url_for('static',filename='script.js') }}" defer></script>
+</head>
+<body>
+<script type="text/javascript">
+$(document).ready(function() {
+	var socket = io.connect('http://127.0.0.1:5000');
+    <h3 id="text-box">text goes here</h3>
+    <form>
+        <label for="input-box">Type something here:</label>
+        <input type="text" id="input-box">
+    </form>
+    <button id="send-btn">testbtn</button>
+</body>
+</html>
+tbd
+-->
+<html lang="en">
 
-        <!--Function in html because reasons?-->
-        {% macro render_field(field) %}
-        <dt>{{ field.label }}
-        <dd>{{ field(**kwargs)|safe }}
-            {% if field.errors %}
-            <ul class=errors>
-                {% for error in field.errors %}
-                <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-        </dd>
-        {% endmacro %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{url_for('static', filename= 'style.css') }}">
+    <title>UNO :D</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+        integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="{{url_for('static',filename='script.js') }}" defer></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+        crossorigin="anonymous"></script>
+    <!--not required but w/o it the console shows a favicon error-->
+</head>
 
-    </head>
-    <body>
-        {% block content %}{% endblock %}
-    </body>
+<body>
+
+    <ul id="messages"></ul>
+    <p id="timer"></p>
+    <h3 id="topcard"></h3>
+    <p id="playerheader"></p>
+    <p id="game"></p>
+    <p id="notif"></p>
+    <input type="text" style="display: none;" id="input">
+    <button id="sendbutton" style="display: none;">Send</button>
+    <p id="currentturn"></p>
+
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            //constant for stopping timer early
+            var earlyReady = false;
+            //for some reason this won't work when i put it in script.js :S
+            //mainly pre game/ room setting up or kicking out code
+
+            socket.on('ready', function (msg) {
+                var button = document.createElement("button")
+                var buttonText = document.createTextNode("Ready")
+                button.appendChild(buttonText)
+                button.addEventListener('click', confirmReady)
+                button.addEventListener('click', stopTimer)
+                document.body.appendChild(button)
+
+                var t = document.getElementById("timer");
+                var time = 60; //60 sec countdown
+                var timer = setInterval(function () {
+                    if (time == -1) {
+                        clearTimeout(timer);
+                        socket.emit('not_ready');
+                        console.log('user failed to confirm ready');
+                        button.removeEventListener('click', confirmReady);
+                        button.removeEventListener('click', stopTimer);
+                        t.innerHTML = "ready was not confirmed by all users...being placed back in the queue! Page will refresh in a moment!";
+                    }
+
+                    else if (earlyReady == true) {
+                        button.removeEventListener('click', confirmReady);
+                        button.removeEventListener('click', stopTimer);
+                        earlyReady = false;
+                    }
+
+                    else {
+                        t.innerHTML = time + ' seconds remaining to confirm ready';
+                        document.body.appendChild(t);
+                        time--;
+
+                    }
+                    socket.on('gamestart', function () {
+                        clearTimeout(timer);
+                        t.innerHTML = "";
+                        button.remove();
+                    });
+                }, 1000);
+
+
+            });
+
+            function confirmReady() {
+                console.log('user ready');
+                socket.emit('ready');
+            }
+
+            function stopTimer() {
+                earlyReady = true;
+            }
+
+            socket.on('refresh', function () {
+                window.location.reload(false);
+            });
+
+
+        });
+    </script>
+
+</body>
+
 </html>

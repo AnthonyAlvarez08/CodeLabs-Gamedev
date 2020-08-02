@@ -11,6 +11,13 @@ class Card:
         if self.isAction:
             self.action = action[0]
 
+    def __repr__(self):
+        if self.isAction:
+            return f'action {self.action} {self.color}'
+        return f'number {self.num} {self.color}'
+
+
+
 """
 The deck consists of 108 cards: four each of "Wild" and "Wild Draw Four,"
 and 25 each of four different colors (red, yellow, green, blue).
@@ -22,7 +29,7 @@ These last three types are known as "action cards."
 
 def new_deck():
     # standard uno deck
-    normalDeck = [
+    normal_deck = [
         "0 0 red", "0 1 red", "0 1 red", "0 2 red", "0 2 red", "0 3 red",
         "0 3 red", "0 4 red", "0 4 red", "0 5 red", "0 5 red", "0 6 red",
         "0 6 red", "0 7 red", "0 7 red", "0 8 red", "0 8 red", "0 9 red",
@@ -47,13 +54,8 @@ def new_deck():
         "1 -1 wild +4", "1 -1 wild wild", "1 -1 wild wild", "1 -1 wild wild",
         "1 -1 wild wild"
     ]
-    shuffle(normalDeck)
-
-    # make sure it doesn't start on an action card
-    while normalDeck[0][0] == '1':
-        shuffle(normalDeck)
-
-    return map(Card, normalDeck)
+    shuffle(normal_deck)
+    return map(Card, normal_deck)
 
 
 class Player:
@@ -73,8 +75,12 @@ class Player:
         cls.deck = new_deck()
         print('deck reshuffled!')
 
+    # the front end will handle valid moves
+    def handle_move(self):
+        pass
+
     def draw_card(self):
-        print('drew card')
+        print('time to draw!')
         try:
             self.hand.append(next(Player.deck))
         except StopIteration:
